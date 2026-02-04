@@ -1,16 +1,25 @@
 {
   description = "Kasm NixOS images";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+  inputs = {
+    nixpkgs = {
+      url = "github:NixOS/nixpkgs/nixos-25.11";
+    };
+    version = {
+      url = "github:a-h/version";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, version }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
         inherit system;
         overlays = [
           (final: prev: {
-              kasmvnc = final.callPackage ./kasmvnc.nix { };
+            kasmvnc = final.callPackage ./kasmvnc.nix { };
+            version = version.packages.${system}.default;
           })
         ];
       };
@@ -23,18 +32,18 @@
         chmod 0755 $out/home/user
       '';
 
-      devTools = with pkgs; [
-        git
-        curl
-        wget
-        jq
+      devTools = [
+        pkgs.git
+        pkgs.curl
+        pkgs.wget
+        pkgs.jq
+        pkgs.skopeo
+        pkgs.version
       ];
     in
     {
       devShells.${system}.default = pkgs.mkShell {
-        buildInputs = [
-          pkgs.crane
-        ];
+        buildInputs = devTools;
       };
 
       packages.${system} = {
@@ -52,14 +61,14 @@
                 pkgs.dockerTools.caCertificates
                 pkgs.dbus
                 pkgs.kasmvnc
-                pkgs.xfce4-session
-                pkgs.xfce4-panel
-                pkgs.xfce4-terminal
-                pkgs.thunar
+                pkgs.gnome-session
+                pkgs.gnome-shell
+                pkgs.gnome-terminal
+                pkgs.nautilus
+                pkgs.gnome-settings-daemon
                 pkgs.firefox
                 dockerUser
-              ]
-              ++ devTools;
+              ];
 
             config = {
               User = "user:user";
@@ -67,7 +76,7 @@
                 "HOME=/home/user"
                 "LANG=en_US.UTF-8"
                 "LC_ALL=en_US.UTF-8"
-                "XDG_CURRENT_DESKTOP=xfce"
+                "XDG_CURRENT_DESKTOP=GNOME"
                 "XDG_SESSION_TYPE=x11"
               ];
               Cmd = [
