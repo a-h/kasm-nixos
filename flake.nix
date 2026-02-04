@@ -1,7 +1,7 @@
 {
   description = "Kasm NixOS images";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
 
   outputs = { self, nixpkgs }:
     let
@@ -10,7 +10,7 @@
         inherit system;
         overlays = [
           (final: prev: {
-            kasmvnc = final.callPackage ./kasmvnc.nix { };
+              kasmvnc = final.callPackage ./kasmvnc.nix { };
           })
         ];
       };
