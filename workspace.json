@@ -1,0 +1,27 @@
+{
+  "description": "NixOS-based image with GNOME desktop and Firefox.",
+  "docker_registry": "https://ghcr.io/",
+  "image_src": "nixos-logo.webp",
+  "run_config": {
+    "hostname": "kasm"
+  },
+  "categories": [
+    "Desktop"
+  ],
+  "friendly_name": "NixOS Desktop",
+  "architecture": [
+    "amd64"
+  ],
+  "compatibility": [
+    {
+      "version": "1.17.x",
+      "image": "ghcr.io/a-h/kasm-nixos/desktop:latest",
+      "uncompressed_size_mb": 2170
+    },
+    {
+      "version": "1.18.x",
+      "image": "ghcr.io/a-h/kasm-nixos/desktop:latest",
+      "uncompressed_size_mb": 2170
+    }
+  ]
+}

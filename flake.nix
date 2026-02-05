@@ -19,6 +19,7 @@
         overlays = [
           (final: prev: {
             kasmvnc = final.callPackage ./kasmvnc.nix { };
+            startup-script = final.callPackage ./startup-script.nix { };
             version = version.packages.${system}.default;
           })
         ];
@@ -61,6 +62,7 @@
                 pkgs.dockerTools.caCertificates
                 pkgs.dbus
                 pkgs.kasmvnc
+                pkgs.startup-script
                 pkgs.gnome-session
                 pkgs.gnome-shell
                 pkgs.gnome-terminal
@@ -80,11 +82,7 @@
                 "XDG_SESSION_TYPE=x11"
               ];
               Cmd = [
-                "kasmvncserver"
-                ":0"
-                "-fg"
-                "-SecurityTypes"
-                "None"
+                "${pkgs.startup-script}/bin/startup.sh"
               ];
               ExposedPorts = {
                 "5901/tcp" = { };
