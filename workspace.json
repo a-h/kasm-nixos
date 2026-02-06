@@ -1,6 +1,6 @@
 {
   "description": "NixOS-based image with GNOME desktop and Firefox.",
-  "docker_registry": "https://ghcr.io/",
+  "docker_registry": "https://ghcr.io",
   "image_src": "nixos-logo.webp",
   "run_config": {
     "hostname": "kasm"
