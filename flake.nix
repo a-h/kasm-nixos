@@ -53,6 +53,12 @@
         mkdir -p $out/usr/share/kasmvnc
         mkdir -p $out/etc/kasmvnc
         cp ${./kasmvnc_defaults.yaml} $out/usr/share/kasmvnc/kasmvnc_defaults.yaml
+        
+        # CA certificates for NSS/p11-kit
+        mkdir -p $out/etc/ssl/certs
+        mkdir -p $out/etc/pki/tls/certs
+        ln -s ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt $out/etc/ssl/certs/ca-bundle.crt
+        ln -s ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt $out/etc/pki/tls/certs/ca-bundle.crt
       '';
 
       devTools = [
@@ -95,6 +101,8 @@
           pkgs.gnome-terminal
           pkgs.nautilus
           pkgs.gnome-settings-daemon
+          pkgs.p11-kit
+          pkgs.nssTools
           pkgs.firefox
         ];
       };
@@ -135,6 +143,8 @@
               "XDG_SESSION_TYPE=x11"
               "XKB_CONFIG_ROOT=/etc/X11/xkb"
               "MOZ_DISABLE_CONTENT_SANDBOX=1"
+              "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
+              "NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
             ];
             Entrypoint = [
               "${pkgs.entrypoint-script}/bin/entrypoint.sh"

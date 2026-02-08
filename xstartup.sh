@@ -8,6 +8,8 @@ exec setpriv --reuid=1000 --regid=1000 --init-groups sh -c '
   export DISPLAY='"$DISPLAY"'
   export XDG_RUNTIME_DIR=/run/user/1000
   export HOME=/home/user
+  export SSL_CERT_FILE='"$SSL_CERT_FILE"'
+  export NIX_SSL_CERT_FILE='"$NIX_SSL_CERT_FILE"'
   
   # Start dbus-daemon
   export DBUS_SESSION_BUS_ADDRESS=$(dbus-daemon --fork --config-file=/etc/dbus-1/session.conf --print-address 2>/dev/null)
