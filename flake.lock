@@ -26,11 +26,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1770483834,
-        "narHash": "sha256-aAK6L+MxZ+HWNjtDkrpvzImxriPMutg/eESb/idsQqk=",
+        "lastModified": 1770560863,
+        "narHash": "sha256-vnjZDNqOLvPeSDivM8S3TSPmOn3IrKw694YDxSfZ9Vw=",
         "owner": "a-h",
         "repo": "KasmVNC",
-        "rev": "65720a3c16abbf8af7706e16ff3b2d12f850f147",
+        "rev": "df64fa4b96d8e1c8fab6f85219968c95d2507f30",
         "type": "github"
       },
       "original": {
