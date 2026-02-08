@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config xmlns="http://openbox.org/3.4/rc">
+  <resistance>
+    <edges>yes</edges>
+  </resistance>
+  <focus>
+    <followMouse>no</followMouse>
+  </focus>
+  <placement>
+    <policy>Smart</policy>
+  </placement>
+  <theme>
+    <name>Clearlooks</name>
+    <cornerRadius>0</cornerRadius>
+  </theme>
+  <desktops>
+    <number>4</number>
+  </desktops>
+  <menu id="root-menu" label="Applications">
+    <item label="Terminal">
+      <action name="Execute">
+        <command>xterm</command>
+      </action>
+    </item>
+    <item label="Firefox">
+      <action name="Execute">
+        <command>firefox --no-sandbox</command>
+      </action>
+    </item>
+    <item label="File Manager">
+      <action name="Execute">
+        <command>nautilus</command>
+      </action>
+    </item>
+    <separator/>
+    <item label="Exit Openbox">
+      <action name="Exit"/>
+    </item>
+  </menu>
+</openbox_config>
