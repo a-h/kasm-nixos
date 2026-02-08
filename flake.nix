@@ -71,6 +71,7 @@
           pkgs.coreutils
           pkgs.bash
           pkgs.util-linux
+          pkgs.shadow
           pkgs.perl
           pkgs.cacert
           pkgs.openssl
@@ -133,6 +134,7 @@
               "XDG_CURRENT_DESKTOP=GNOME"
               "XDG_SESSION_TYPE=x11"
               "XKB_CONFIG_ROOT=/etc/X11/xkb"
+              "MOZ_DISABLE_CONTENT_SANDBOX=1"
             ];
             Entrypoint = [
               "${pkgs.entrypoint-script}/bin/entrypoint.sh"

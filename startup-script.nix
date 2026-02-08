@@ -28,12 +28,16 @@ writeShellScriptBin "entrypoint.sh" ''
 
   # Ensure a non-root user exists for the desktop session
   if ! grep -q '^user:' /etc/passwd; then
-    echo 'user:x:1000:1000::/home/user:/bin/sh' >> /etc/passwd
+    echo 'user:x:1000:1000:User:/home/user:/bin/bash' >> /etc/passwd
   fi
   if ! grep -q '^user:' /etc/group; then
     echo 'user:x:1000:' >> /etc/group
   fi
   mkdir -p /home/user
+  chown -R 1000:1000 /home/user
+  
+  # Set up user's home directory with proper permissions
+  mkdir -p /home/user/.config /home/user/.cache /home/user/.local/share
   chown -R 1000:1000 /home/user
 
   # Ensure user runtime dir exists for D-Bus
