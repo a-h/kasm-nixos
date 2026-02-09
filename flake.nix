@@ -27,10 +27,6 @@
             
 
         entrypoint-script = final.callPackage ./startup-script.nix { };
-            openbox-config = final.callPackage ./openbox-config.nix { };
-            tint2-config = final.callPackage ./tint2-config.nix { };
-            rofi-config = final.callPackage ./rofi-config.nix { };
-            dbus-config = final.callPackage ./dbus-config.nix { };
             xstartup-config = final.callPackage ./xstartup-config.nix { };
             version = version.packages.${system}.default;
           })
@@ -233,9 +229,6 @@ EOF
           contents = [
             pkgs.dockerTools.fakeNss
             desktopEnv
-            pkgs.openbox-config
-            pkgs.tint2-config
-            pkgs.rofi-config
             pkgs.xstartup-config
             pkgs.entrypoint-script
             fhsLayout
