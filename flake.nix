@@ -254,7 +254,6 @@ EOF
               "XDG_CURRENT_DESKTOP=GNOME"
               "XDG_SESSION_TYPE=x11"
               "XKB_CONFIG_ROOT=/etc/X11/xkb"
-              "MOZ_DISABLE_CONTENT_SANDBOX=1"
               "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
               "NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
             ];
