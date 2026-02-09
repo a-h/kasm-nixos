@@ -1,0 +1,83 @@
+configuration {
+    icon-theme: "hicolor";
+    display-drun: "Applications";
+    drun-display-format: "{name}";
+    disable-history: false;
+    sidebar-mode: false;
+}
+
+@theme "/dev/null"
+
+* {
+    bg0: #1e1e1e;
+    bg1: #2d2d2d;
+    bg2: #3d3d3d;
+    fg0: #ffffff;
+    accent: #5588ff;
+    
+    background-color: @bg0;
+    foreground-color: @fg0;
+    
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+window {
+    border: 1px;
+    border-color: @accent;
+    background-color: @bg0;
+    width: 50%;
+    height: 60%;
+}
+
+mainbox {
+    border: 0;
+    padding: 20px;
+    background-color: @bg0;
+}
+
+inputbar {
+    children: [ prompt, entry ];
+    spacing: 10px;
+    padding: 10px;
+    background-color: @bg1;
+    border-radius: 4px;
+}
+
+prompt {
+    text-color: @accent;
+}
+
+entry {
+    text-color: @fg0;
+    placeholder-color: #888888;
+    background-color: @bg1;
+}
+
+listview {
+    columns: 1;
+    lines: 15;
+    spacing: 4px;
+    scrollbar: true;
+    padding: 10px 0;
+}
+
+element {
+    padding: 8px 10px;
+    background-color: @bg0;
+    text-color: @fg0;
+}
+
+element selected {
+    background-color: @accent;
+    text-color: @bg0;
+    border-radius: 4px;
+}
+
+scrollbar {
+    width: 8px;
+    background-color: @bg1;
+    handle-color: @accent;
+    handle-width: 8px;
+}

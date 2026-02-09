@@ -16,7 +16,24 @@
   <desktops>
     <number>4</number>
   </desktops>
+  <keyboard>
+    <keybind key="Super_L">
+      <action name="Execute">
+        <command>rofi -show drun</command>
+      </action>
+    </keybind>
+    <keybind key="alt-F2">
+      <action name="Execute">
+        <command>rofi -show run</command>
+      </action>
+    </keybind>
+  </keyboard>
   <menu id="root-menu" label="Applications">
+    <item label="App Launcher (Super)">
+      <action name="Execute">
+        <command>rofi -show drun</command>
+      </action>
+    </item>
     <item label="Terminal">
       <action name="Execute">
         <command>xterm</command>

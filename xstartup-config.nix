@@ -3,9 +3,8 @@
 stdenv.mkDerivation {
   name = "xstartup-config";
   
-  src = ./xstartup.sh;
-  
   unpackPhase = "true";
+  dontUnpack = true;
   
   installPhase = ''
     mkdir -p $out/root/.vnc
