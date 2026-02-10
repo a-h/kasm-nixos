@@ -150,6 +150,25 @@ EOF
         mkdir -p $out/usr/share/kasmvnc
         mkdir -p $out/etc/kasmvnc
         cp ${./kasmvnc_defaults.yaml} $out/usr/share/kasmvnc/kasmvnc_defaults.yaml
+
+        # Provide stable entrypoint and Kasm-compatible startup scripts.
+        ln -s ${pkgs.entrypoint-script}/bin/entrypoint.sh $out/entrypoint.sh
+        mkdir -p $out/dockerstartup
+        cat > $out/dockerstartup/kasm_default_profile.sh <<'EOF'
+#!/bin/bash
+exec "$@"
+EOF
+        cat > $out/dockerstartup/vnc_startup.sh <<'EOF'
+#!/bin/bash
+exec /entrypoint.sh
+EOF
+        cat > $out/dockerstartup/kasm_startup.sh <<'EOF'
+#!/bin/bash
+exit 0
+EOF
+        chmod +x $out/dockerstartup/kasm_default_profile.sh \
+          $out/dockerstartup/vnc_startup.sh \
+          $out/dockerstartup/kasm_startup.sh
         
         # CA certificates for NSS/p11-kit
         mkdir -p $out/etc/ssl/certs
@@ -166,6 +185,33 @@ EOF
         pkgs.skopeo
         pkgs.version
       ];
+
+      # Real NSS files for Docker healthcheck compatibility
+      # Docker's healthcheck sandbox rejects symlinks that escape the container root
+      realNss = pkgs.runCommand "real-nss" { } ''
+        mkdir -p $out/etc
+        
+        # Create /etc/passwd with root and user accounts
+        cat > $out/etc/passwd <<'EOF'
+root:x:0:0:root:/root:/bin/bash
+user:x:1000:1000:Kasm User:/home/user:/bin/bash
+EOF
+        
+        # Create /etc/group with root and user groups
+        cat > $out/etc/group <<'EOF'
+root:x:0:
+user:x:1000:
+EOF
+        
+        # Create /etc/shadow with locked passwords
+        cat > $out/etc/shadow <<'EOF'
+root:!:1::::::
+user:!:1::::::
+EOF
+        
+        chmod 644 $out/etc/passwd $out/etc/group
+        chmod 600 $out/etc/shadow
+      '';
 
       # Create a unified environment with all packages properly linked
       desktopEnv = pkgs.buildEnv {
@@ -227,7 +273,7 @@ EOF
 
           # Individual layers for each major component
           contents = [
-            pkgs.dockerTools.fakeNss
+            realNss
             desktopEnv
             pkgs.xstartup-config
             pkgs.entrypoint-script
@@ -238,7 +284,7 @@ EOF
             User = "root";
             Env = [
               "PATH=${desktopEnv}/bin:${pkgs.entrypoint-script}/bin"
-              "HOME=/home/user"
+              "HOME=/home/kasm-user"
               "LANG=en_US.UTF-8"
               "LANGUAGE=en_US.UTF-8"
               "LC_ALL=en_US.UTF-8"
@@ -258,6 +304,9 @@ EOF
             ExposedPorts = {
               "6080/tcp" = { };
               "6901/tcp" = { };
+            };
+            Labels = {
+              "com.kasmweb.image" = "true";
             };
           };
         };

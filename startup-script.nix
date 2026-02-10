@@ -1,10 +1,23 @@
-{ writeShellScriptBin, kasmvnc, dbus, xkeyboard-config, xorg }:
+{ writeShellScriptBin, kasmvnc, dbus, xkeyboard-config, xorg, util-linux }:
 
 writeShellScriptBin "entrypoint.sh" ''
   #!/bin/bash
-  set -ex
+  set -e
 
   export PATH="${dbus}/bin:$PATH"
+
+  # Docker exec rejects symlinked /etc/passwd that points outside the container root.
+  # Replace symlinks with real files early so Kasm provisioning can exec into the container.
+  for f in /etc/passwd /etc/group /etc/shadow; do
+    if [ -L "$f" ]; then
+      tmp="$(mktemp)"
+      cp -L "$f" "$tmp"
+      rm -f "$f"
+      mv "$tmp" "$f"
+      chmod 644 "$f"
+    fi
+  done
+  chmod 600 /etc/shadow 2>/dev/null || true
 
   DISPLAY="''${DISPLAY:-:1}"
   export DISPLAY
@@ -19,26 +32,26 @@ writeShellScriptBin "entrypoint.sh" ''
   fi
 
   # Ensure standard runtime dirs exist
-  mkdir -p /tmp /run
-  chmod 1777 /tmp
+  mkdir -p /tmp /run /tmp/.X11-unix
+  chmod 1777 /tmp /tmp/.X11-unix
   
   # Create required directories
   mkdir -p /home/user/.vnc
   mkdir -p /tmp/.X11-unix
 
-  # Ensure a non-root user exists for the desktop session
-  if ! grep -q '^user:' /etc/passwd; then
-    echo 'user:x:1000:1000:User:/home/user:/bin/bash' >> /etc/passwd
+  # Ensure the Kasm user exists for the desktop session
+  if ! grep -q '^kasm-user:' /etc/passwd; then
+    echo 'kasm-user:x:1000:1000:Kasm User:/home/kasm-user:/bin/bash' >> /etc/passwd
   fi
-  if ! grep -q '^user:' /etc/group; then
-    echo 'user:x:1000:' >> /etc/group
+  if ! grep -q '^kasm-user:' /etc/group; then
+    echo 'kasm-user:x:1000:' >> /etc/group
   fi
-  mkdir -p /home/user
-  chown -R 1000:1000 /home/user
+  mkdir -p /home/kasm-user
+  chown -R 1000:1000 /home/kasm-user
   
   # Set up user's home directory with proper permissions
-  mkdir -p /home/user/.config /home/user/.cache /home/user/.local/share
-  chown -R 1000:1000 /home/user
+  mkdir -p /home/kasm-user/.config /home/kasm-user/.cache /home/kasm-user/.local/share
+  chown -R 1000:1000 /home/kasm-user
 
   # Ensure user runtime dir exists for D-Bus
   mkdir -p /run/user/1000
@@ -46,15 +59,16 @@ writeShellScriptBin "entrypoint.sh" ''
   chmod 0700 /run/user/1000
   
   # Generate self-signed SSL certificate for websocket
+  mkdir -p /home/kasm-user/.vnc
   openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
-    -keyout /home/user/.vnc/self.pem \
-    -out /home/user/.vnc/self.pem \
+    -keyout /home/kasm-user/.vnc/self.pem \
+    -out /home/kasm-user/.vnc/self.pem \
     -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost" 2>/dev/null || true
   
-  if [ -f /home/user/.vnc/self.pem ]; then
-    chmod 600 /home/user/.vnc/self.pem
-    chown 1000:1000 /home/user/.vnc/self.pem
-    echo "SSL certificate generated: /home/user/.vnc/self.pem"
+  if [ -f /home/kasm-user/.vnc/self.pem ]; then
+    chmod 600 /home/kasm-user/.vnc/self.pem
+    chown 1000:1000 /home/kasm-user/.vnc/self.pem
+    echo "SSL certificate generated: /home/kasm-user/.vnc/self.pem"
   fi
   
   # Xvnc was compiled with hardcoded paths for XKB
@@ -77,30 +91,48 @@ writeShellScriptBin "entrypoint.sh" ''
   touch /dev/input/mice /dev/input/keyboard
   touch /dev/input/event0 /dev/input/event1 /dev/input/event2
    
+  WEBSOCKET_PORT="''${NO_VNC_PORT:-6901}"
+
   # Start KasmVNC server (websocket on 6901)
-  echo "Starting KasmVNC (websocket on 6901)..."
-  ${kasmvnc}/bin/Xvnc "$DISPLAY" \
+  echo "Starting KasmVNC (websocket on ''${WEBSOCKET_PORT})..."
+  ${util-linux}/bin/setpriv --reuid=1000 --regid=1000 --clear-groups -- ${kasmvnc}/bin/Xvnc "$DISPLAY" \
     -geometry ''${VNC_RESOLUTION:-1920x1080} \
     -depth 24 \
     -RectThreads 0 \
     -SecurityTypes None \
-    -websocketPort 6901 \
     -httpd ${kasmvnc}/share/kasmvnc/www \
+    -websocketPort ''${WEBSOCKET_PORT} \
     -DisableBasicAuth \
-    -cert /home/user/.vnc/self.pem \
-    -key /home/user/.vnc/self.pem \
     -FrameRate ''${MAX_FRAME_RATE:-30} \
-    -interface 0.0.0.0 \
-    &
+    -interface 0.0.0.0 &
   XVNC_PID=$!
   
   # Give Xvnc time to initialize
   sleep 2
 
   # Start the desktop environment via xstartup script
-  /root/.vnc/xstartup &
+  ${util-linux}/bin/setpriv --reuid=1000 --regid=1000 --clear-groups -- /root/.vnc/xstartup > /tmp/xstartup.log 2>&1 &
+  XSTARTUP_PID=$!
 
-  # Keep the container running
-  wait $XVNC_PID
+  # Ensure children are properly cleaned up on exit
+  cleanup() {
+    echo "[entrypoint] Shutting down services..." >&2
+    kill $XVNC_PID $XSTARTUP_PID 2>/dev/null || true
+    exit 0
+  }
+  trap cleanup TERM INT EXIT
+  
+  # Health check and monitoring
+  echo "[entrypoint] Services started: Xvnc PID=$XVNC_PID, xstartup PID=$XSTARTUP_PID" >&2
+  
+  # Monitor services and log warnings if they die
+  while true; do
+    if ! kill -0 $XVNC_PID 2>/dev/null; then
+      echo "[WARNING] KasmVNC (PID $XVNC_PID) has exited unexpectedly" | tee -a /tmp/container-health.log >&2
+    fi
+    if ! kill -0 $XSTARTUP_PID 2>/dev/null; then
+      echo "[WARNING] xstartup session (PID $XSTARTUP_PID) has exited. Check /tmp/xstartup.log for details" | tee -a /tmp/container-health.log >&2
+    fi
+    sleep 10
+  done
 ''
-

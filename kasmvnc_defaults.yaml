@@ -12,8 +12,7 @@ desktop:
 network:
   protocol: http
   interface: 0.0.0.0
-  websocket_port: 0
-  vnc_port: 5901
+  websocket_port: 6901
   use_ipv4: true
   use_ipv6: true
   udp:
@@ -22,9 +21,9 @@ network:
     payload_size: auto
     stun_server: auto
   ssl:
-    pem_certificate: /etc/ssl/certs/ssl-cert-snakeoil.pem
-    pem_key: /etc/ssl/private/ssl-cert-snakeoil.key
-    require_ssl: true
+    pem_certificate: /home/user/.vnc/self.pem
+    pem_key: /home/user/.vnc/self.pem
+    require_ssl: false
   # unix_relay:
   #   name:
   #   path:

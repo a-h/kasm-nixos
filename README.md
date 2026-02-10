@@ -15,7 +15,9 @@ nix build .#desktop
 Interactive: true
 
 ```bash
+export VERSION=`version get`
 gunzip -c result | skopeo copy docker-archive:/dev/stdin docker://ghcr.io/a-h/kasm-nixos/desktop:latest
+gunzip -c result | skopeo copy docker-archive:/dev/stdin "docker://ghcr.io/a-h/kasm-nixos/desktop:${VERSION}"
 ```
 
 ### desktop-load
