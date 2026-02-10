@@ -58,7 +58,11 @@
         mkdir -p $out/run/user/1000
         mkdir -p $out/var/lib/dbus
         mkdir -p $out/tmp
+        mkdir -p $out/tmp/.X11-unix
+        chmod 1777 $out/tmp $out/tmp/.X11-unix
         mkdir -p $out/etc/xdg
+        mkdir -p $out/home/kasm-user
+        chmod 0777 $out/home/kasm-user
 
         # XDG defaults and D-Bus services at FHS locations
         cp -rL ${pkgs.xfce.xfce4-session}/etc/xdg/. $out/etc/xdg/ 2>/dev/null || true
@@ -117,6 +121,7 @@ EOF
         ln -s ${pkgs.xfce.xfdesktop}/bin/xfdesktop $out/usr/bin/xfdesktop
         ln -s ${pkgs.xfce.thunar}/bin/Thunar $out/usr/bin/Thunar
         ln -s ${pkgs.xfce.xfconf}/lib/xfce4/xfconf/xfconfd $out/usr/bin/xfconfd
+        cp ${pkgs.xorg.xkbcomp}/bin/xkbcomp $out/usr/bin/xkbcomp
         ln -s ${pkgs.xterm}/bin/xterm $out/usr/bin/xterm
         ln -s ${pkgs.firefox}/bin/firefox $out/usr/bin/firefox
         
@@ -150,6 +155,10 @@ EOF
         mkdir -p $out/usr/share/kasmvnc
         mkdir -p $out/etc/kasmvnc
         cp ${./kasmvnc_defaults.yaml} $out/usr/share/kasmvnc/kasmvnc_defaults.yaml
+
+        # Precreate machine-id for non-root entrypoints
+        ${pkgs.dbus}/bin/dbus-uuidgen --ensure=$out/etc/machine-id
+        cp $out/etc/machine-id $out/var/lib/dbus/machine-id
 
         # Provide stable entrypoint and Kasm-compatible startup scripts.
         ln -s ${pkgs.entrypoint-script}/bin/entrypoint.sh $out/entrypoint.sh
@@ -194,19 +203,19 @@ EOF
         # Create /etc/passwd with root and user accounts
         cat > $out/etc/passwd <<'EOF'
 root:x:0:0:root:/root:/bin/bash
-user:x:1000:1000:Kasm User:/home/user:/bin/bash
+kasm-user:x:1000:1000:Kasm User:/home/kasm-user:/bin/bash
 EOF
         
         # Create /etc/group with root and user groups
         cat > $out/etc/group <<'EOF'
 root:x:0:
-user:x:1000:
+kasm-user:x:1000:
 EOF
         
         # Create /etc/shadow with locked passwords
         cat > $out/etc/shadow <<'EOF'
 root:!:1::::::
-user:!:1::::::
+kasm-user:!:1::::::
 EOF
         
         chmod 644 $out/etc/passwd $out/etc/group
@@ -281,7 +290,7 @@ EOF
           ];
 
           config = {
-            User = "root";
+            User = "1000";
             Env = [
               "PATH=${desktopEnv}/bin:${pkgs.entrypoint-script}/bin"
               "HOME=/home/kasm-user"
@@ -292,7 +301,7 @@ EOF
               "DISPLAY=:1"
               "XDG_CURRENT_DESKTOP=GNOME"
               "XDG_SESSION_TYPE=x11"
-              "XKB_CONFIG_ROOT=/etc/X11/xkb"
+              "XKB_CONFIG_ROOT=${pkgs.xkeyboard-config}/share/X11/xkb"
               "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
               "NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
             ];
@@ -309,6 +318,7 @@ EOF
               "com.kasmweb.image" = "true";
             };
           };
+
         };
       };
     };

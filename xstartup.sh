@@ -1,17 +1,25 @@
 #!/bin/sh
 export DISPLAY=${DISPLAY:-:1}
-export XDG_RUNTIME_DIR=/run/user/1000
+export XDG_RUNTIME_DIR=/tmp/runtime-kasm-user
+mkdir -p "$XDG_RUNTIME_DIR"
+chmod 0700 "$XDG_RUNTIME_DIR"
+
+if [ -w /home/kasm-user ]; then
+  export HOME=/home/kasm-user
+else
+  export HOME=/tmp/kasm-user
+fi
+mkdir -p "$HOME/.config" "$HOME/.cache" "$HOME/.local/share"
 
 # Run the desktop environment (entrypoint already drops to kasm-user)
 echo "[xstartup] Starting desktop environment as user..." >&2
 set +e  # Continue on error for individual components
   
 export DISPLAY="$DISPLAY"
-export XDG_RUNTIME_DIR=/run/user/1000
-export HOME=/home/kasm-user
-export XDG_CONFIG_HOME=/home/kasm-user/.config
-export XDG_CACHE_HOME=/home/kasm-user/.cache
-export XDG_DATA_HOME=/home/kasm-user/.local/share
+export XDG_RUNTIME_DIR=/tmp/runtime-kasm-user
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CURRENT_DESKTOP=XFCE
 export XDG_SESSION_DESKTOP=xfce
 export XDG_SESSION_TYPE=x11
