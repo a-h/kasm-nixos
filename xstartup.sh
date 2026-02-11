@@ -4,11 +4,7 @@ export XDG_RUNTIME_DIR=/tmp/runtime-kasm-user
 mkdir -p "$XDG_RUNTIME_DIR"
 chmod 0700 "$XDG_RUNTIME_DIR"
 
-if [ -w /home/kasm-user ]; then
-  export HOME=/home/kasm-user
-else
-  export HOME=/tmp/kasm-user
-fi
+export HOME=/home/kasm-user
 mkdir -p "$HOME/.config" "$HOME/.cache" "$HOME/.local/share"
 
 # Run the desktop environment (entrypoint already drops to kasm-user)

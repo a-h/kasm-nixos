@@ -21,8 +21,8 @@ network:
     payload_size: auto
     stun_server: auto
   ssl:
-    pem_certificate: /home/user/.vnc/self.pem
-    pem_key: /home/user/.vnc/self.pem
+    pem_certificate: /home/kasm-user/.vnc/self.pem
+    pem_key: /home/kasm-user/.vnc/self.pem
     require_ssl: false
   # unix_relay:
   #   name:

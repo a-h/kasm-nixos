@@ -42,11 +42,7 @@ Interactive: true
 
 ```bash
 docker rm -f kasm-desktop 2>/dev/null || true
-docker run -d --name kasm-desktop \
-	--tmpfs /home/kasm-user:mode=0777 \
-	--tmpfs /tmp:mode=1777 \
-	-p 6901:6901 \
-	ghcr.io/a-h/kasm-nixos/desktop:latest
+docker run -d --name kasm-desktop -p 6901:6901 ghcr.io/a-h/kasm-nixos/desktop:latest
 ```
 
 ### desktop-upgrade
@@ -55,11 +51,7 @@ Interactive: true
 
 ```bash
 docker rm -f kasm-desktop 2>/dev/null || true
-docker run -d --name kasm-desktop \
-	--tmpfs /home/kasm-user:mode=0777 \
-	--tmpfs /tmp:mode=1777 \
-	-p 6901:6901 \
-	ghcr.io/a-h/kasm-nixos/desktop:latest
+docker run -d --name kasm-desktop -p 6901:6901 ghcr.io/a-h/kasm-nixos/desktop:latest
 ```
 
 ### browser-open

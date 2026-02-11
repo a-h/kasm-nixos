@@ -24,9 +24,9 @@
           (final: prev: {
             # Use KasmVNC from the upstream flake (built from source)
             kasmvnc = kasmvnc-flake.packages.${system}.kasmvnc;
-            
 
-        entrypoint-script = final.callPackage ./startup-script.nix { };
+
+            entrypoint-script = final.callPackage ./startup-script.nix { };
             xstartup-config = final.callPackage ./xstartup-config.nix { };
             version = version.packages.${system}.default;
           })
@@ -37,32 +37,29 @@
       fhsLayout = pkgs.runCommand "fhs-layout" { } ''
         set -e
         mkdir -p $out
-        
+
         # XKB files at standard location
         mkdir -p $out/etc/X11
         cp -r ${pkgs.xkeyboard-config}/share/X11/xkb $out/etc/X11/
         mkdir -p $out/usr/share/X11
         cp -r ${pkgs.xkeyboard-config}/share/X11/xkb $out/usr/share/X11/
-        
+
         # D-Bus configuration (both paths for compatibility)
         mkdir -p $out/etc/dbus-1/session.d
         cp ${./dbus-session.conf} $out/etc/dbus-1/session.conf
         cp ${./dbus-session.conf} $out/etc/dbus-1/session.d/kasm.conf
-        
+
         # Device directories for X11 input
         mkdir -p $out/proc/bus/input
         mkdir -p $out/dev/input
         mkdir -p $out/dev/shm
-        
+
         # Runtime directories
         mkdir -p $out/run/user/1000
         mkdir -p $out/var/lib/dbus
         mkdir -p $out/tmp
         mkdir -p $out/tmp/.X11-unix
-        chmod 1777 $out/tmp $out/tmp/.X11-unix
         mkdir -p $out/etc/xdg
-        mkdir -p $out/home/kasm-user
-        chmod 0777 $out/home/kasm-user
 
         # XDG defaults and D-Bus services at FHS locations
         cp -rL ${pkgs.xfce.xfce4-session}/etc/xdg/. $out/etc/xdg/ 2>/dev/null || true
@@ -75,11 +72,12 @@
         mkdir -p $out/usr/share/dbus-1/services
         # Create xfconf D-Bus service file with correct path
         cat > $out/usr/share/dbus-1/services/org.xfce.Xfconf.service <<'EOF'
-[D-BUS Service]
-Name=org.xfce.Xfconf
-Exec=${pkgs.xfce.xfconf}/lib/xfce4/xfconf/xfconfd
-SystemdService=xfconfd.service
-EOF
+          [D-BUS Service]
+          Name=org.xfce.Xfconf
+          Exec=${pkgs.xfce.xfconf}/lib/xfce4/xfconf/xfconfd
+          SystemdService=xfconfd.service
+        EOF
+
         # Create xfce4-notifyd D-Bus service if panel provides it
         if [ -f ${pkgs.xfce.xfce4-panel}/share/dbus-1/services/org.xfce.Panel.service ]; then
           cp ${pkgs.xfce.xfce4-panel}/share/dbus-1/services/org.xfce.Panel.service $out/usr/share/dbus-1/services/
@@ -96,7 +94,7 @@ EOF
         cp -rL ${pkgs.xfce.xfce4-settings}/share/applications/. $out/usr/share/applications/ 2>/dev/null || true
         cp -rL ${pkgs.xfce.xfdesktop}/share/applications/. $out/usr/share/applications/ 2>/dev/null || true
         cp -rL ${pkgs.xfce.thunar}/share/applications/. $out/usr/share/applications/ 2>/dev/null || true
-        
+
         # Copy icon themes to /usr/share/icons for proper icon display
         mkdir -p $out/usr/share/icons
         cp -rL ${pkgs.hicolor-icon-theme}/share/icons/. $out/usr/share/icons/ 2>/dev/null || true
@@ -111,7 +109,7 @@ EOF
         # Session descriptors - symlink xsessions from xfce4-session to standard location
         mkdir -p $out/usr/share/xsessions
         ln -s ${pkgs.xfce.xfce4-session}/share/xsessions/xfce.desktop $out/usr/share/xsessions/xfce.desktop
-        
+
         # Symlink XFCE4 binaries to /usr/bin for compatibility with session files
         mkdir -p $out/usr/bin
         ln -s ${pkgs.xfce.xfce4-session}/bin/xfce4-session $out/usr/bin/xfce4-session
@@ -124,32 +122,32 @@ EOF
         cp ${pkgs.xorg.xkbcomp}/bin/xkbcomp $out/usr/bin/xkbcomp
         ln -s ${pkgs.xterm}/bin/xterm $out/usr/bin/xterm
         ln -s ${pkgs.firefox}/bin/firefox $out/usr/bin/firefox
-        
+
         # Create desktop application entries
         cat > $out/usr/share/applications/xterm.desktop <<'EOF'
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Terminal
-Comment=X Terminal Emulator
-Exec=xterm
-Icon=utilities-terminal
-Categories=System;TerminalEmulator;
-Terminal=false
-EOF
-        
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=Terminal
+          Comment=X Terminal Emulator
+          Exec=xterm
+          Icon=utilities-terminal
+          Categories=System;TerminalEmulator;
+          Terminal=false
+        EOF
+
         cat > $out/usr/share/applications/firefox.desktop <<'EOF'
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Firefox Web Browser
-Comment=Browse the World Wide Web
-Exec=firefox %u
-Icon=firefox
-Categories=Network;WebBrowser;
-MimeType=text/html;text/xml;
-Terminal=false
-EOF
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=Firefox Web Browser
+          Comment=Browse the World Wide Web
+          Exec=firefox %u
+          Icon=firefox
+          Categories=Network;WebBrowser;
+          MimeType=text/html;text/xml;
+          Terminal=false
+        EOF
         
         # KasmVNC configuration
         mkdir -p $out/usr/share/kasmvnc
@@ -164,17 +162,17 @@ EOF
         ln -s ${pkgs.entrypoint-script}/bin/entrypoint.sh $out/entrypoint.sh
         mkdir -p $out/dockerstartup
         cat > $out/dockerstartup/kasm_default_profile.sh <<'EOF'
-#!/bin/bash
-exec "$@"
-EOF
+          #!/bin/bash
+          exec "$@"
+        EOF
         cat > $out/dockerstartup/vnc_startup.sh <<'EOF'
-#!/bin/bash
-exec /entrypoint.sh
-EOF
+          #!/bin/bash
+          exec /entrypoint.sh
+        EOF
         cat > $out/dockerstartup/kasm_startup.sh <<'EOF'
-#!/bin/bash
-exit 0
-EOF
+          #!/bin/bash
+          exit 0
+        EOF
         chmod +x $out/dockerstartup/kasm_default_profile.sh \
           $out/dockerstartup/vnc_startup.sh \
           $out/dockerstartup/kasm_startup.sh
@@ -195,32 +193,11 @@ EOF
         pkgs.version
       ];
 
-      # Real NSS files for Docker healthcheck compatibility
-      # Docker's healthcheck sandbox rejects symlinks that escape the container root
-      realNss = pkgs.runCommand "real-nss" { } ''
-        mkdir -p $out/etc
-        
-        # Create /etc/passwd with root and user accounts
-        cat > $out/etc/passwd <<'EOF'
-root:x:0:0:root:/root:/bin/bash
-kasm-user:x:1000:1000:Kasm User:/home/kasm-user:/bin/bash
-EOF
-        
-        # Create /etc/group with root and user groups
-        cat > $out/etc/group <<'EOF'
-root:x:0:
-kasm-user:x:1000:
-EOF
-        
-        # Create /etc/shadow with locked passwords
-        cat > $out/etc/shadow <<'EOF'
-root:!:1::::::
-kasm-user:!:1::::::
-EOF
-        
-        chmod 644 $out/etc/passwd $out/etc/group
-        chmod 600 $out/etc/shadow
-      '';
+      # Minimal NSS files with kasm-user added (source for fakeRootCommands copies).
+      fakeNssWithUser = pkgs.dockerTools.fakeNss.override {
+        extraPasswdLines = [ "kasm-user:x:1000:1000:Kasm User:/home/kasm-user:/bin/bash" ];
+        extraGroupLines = [ "kasm-user:x:1000:" ];
+      };
 
       # Create a unified environment with all packages properly linked
       desktopEnv = pkgs.buildEnv {
@@ -268,6 +245,40 @@ EOF
           pkgs.nssTools
         ];
       };
+
+      # Apply user-owned runtime paths at image assembly time, not inside Nix derivations.
+      kasmUserFakeRootCommands = ''
+        mkdir -p ./home/kasm-user
+        chown 1000:1000 ./home/kasm-user
+        chmod 0755 ./home/kasm-user
+
+        mkdir -p ./run/user/1000
+        chown 1000:1000 ./run/user/1000
+        chmod 0700 ./run/user/1000
+
+        # Ensure /tmp is world-writable with sticky bit for X11 and caching
+        mkdir -p ./tmp ./tmp/.X11-unix
+        chmod 1777 ./tmp ./tmp/.X11-unix
+
+        # Ensure NSS files are real files, not symlinks into /nix/store
+        mkdir -p ./etc
+        rm -f ./etc/passwd ./etc/group ./etc/shadow ./etc/nsswitch.conf
+        cp ${fakeNssWithUser}/etc/passwd ./etc/passwd
+        cp ${fakeNssWithUser}/etc/group ./etc/group
+        cp ${fakeNssWithUser}/etc/nsswitch.conf ./etc/nsswitch.conf
+        chmod 644 ./etc/passwd ./etc/group ./etc/nsswitch.conf
+
+        # Provide a locked shadow file for root and kasm-user
+        cat > ./etc/shadow <<'EOF'
+        root:!:1::::::
+        kasm-user:!:1::::::
+        EOF
+        chmod 600 ./etc/shadow
+
+        # Match fakeNss behavior for /var/empty
+        mkdir -p ./var
+        cp -r ${fakeNssWithUser}/var/empty ./var/empty
+      '';
     in
     {
       devShells.${system}.default = pkgs.mkShell {
@@ -282,12 +293,13 @@ EOF
 
           # Individual layers for each major component
           contents = [
-            realNss
             desktopEnv
             pkgs.xstartup-config
             pkgs.entrypoint-script
             fhsLayout
           ];
+
+          fakeRootCommands = kasmUserFakeRootCommands;
 
           config = {
             User = "1000";
@@ -318,8 +330,8 @@ EOF
               "com.kasmweb.image" = "true";
             };
           };
-
         };
+
       };
     };
 }

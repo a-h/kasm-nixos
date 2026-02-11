@@ -9,19 +9,21 @@ writeShellScriptBin "entrypoint.sh" ''
   DISPLAY="''${DISPLAY:-:1}"
   export DISPLAY
 
+  export HOME="/home/kasm-user"
+
   # Ensure standard runtime dirs exist
   mkdir -p /tmp /tmp/.X11-unix
   
   # Generate self-signed SSL certificate for websocket
-  mkdir -p /home/kasm-user/.vnc
+  mkdir -p "$HOME/.vnc"
   openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
-    -keyout /home/kasm-user/.vnc/self.pem \
-    -out /home/kasm-user/.vnc/self.pem \
+    -keyout "$HOME/.vnc/self.pem" \
+    -out "$HOME/.vnc/self.pem" \
     -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost" 2>/dev/null || true
   
-  if [ -f /home/kasm-user/.vnc/self.pem ]; then
-    chmod 600 /home/kasm-user/.vnc/self.pem
-    echo "SSL certificate generated: /home/kasm-user/.vnc/self.pem"
+  if [ -f "$HOME/.vnc/self.pem" ]; then
+    chmod 600 "$HOME/.vnc/self.pem"
+    echo "SSL certificate generated: $HOME/.vnc/self.pem"
   fi
   
   # Create runtime directories for X11
