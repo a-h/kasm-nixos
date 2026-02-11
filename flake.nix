@@ -153,6 +153,7 @@
         mkdir -p $out/usr/share/kasmvnc
         mkdir -p $out/etc/kasmvnc
         cp ${./kasmvnc_defaults.yaml} $out/usr/share/kasmvnc/kasmvnc_defaults.yaml
+        cp ${./kasmvnc_defaults.yaml} $out/etc/kasmvnc/kasmvnc.yaml
 
         # Precreate machine-id for non-root entrypoints
         ${pkgs.dbus}/bin/dbus-uuidgen --ensure=$out/etc/machine-id

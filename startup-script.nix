@@ -43,6 +43,8 @@ writeShellScriptBin "entrypoint.sh" ''
     -xkbdir ${xkeyboard-config}/share/X11/xkb \
     -httpd ${kasmvnc}/share/kasmvnc/www \
     -websocketPort ''${WEBSOCKET_PORT} \
+    -cert "$HOME/.vnc/self.pem" \
+    -sslOnly \
     -DisableBasicAuth \
     -FrameRate ''${MAX_FRAME_RATE:-30} \
     -interface 0.0.0.0 &
