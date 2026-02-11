@@ -9,23 +9,17 @@
       url = "github:a-h/version";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    kasmvnc-flake = {
-      url = "github:a-h/KasmVNC";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
-  outputs = { self, nixpkgs, version, kasmvnc-flake }:
+  outputs = { self, nixpkgs, version }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
         inherit system;
         overlays = [
           (final: prev: {
-            # Use KasmVNC from the upstream flake (built from source)
-            kasmvnc = kasmvnc-flake.packages.${system}.kasmvnc;
-
-
+            # Use official KasmVNC binary distribution from .deb package
+            kasmvnc = final.callPackage ./kasmvnc.nix { };
             entrypoint-script = final.callPackage ./startup-script.nix { };
             xstartup-config = final.callPackage ./xstartup-config.nix { };
             version = version.packages.${system}.default;
